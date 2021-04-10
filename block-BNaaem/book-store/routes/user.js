@@ -12,6 +12,7 @@ router.post("/ragister", async (req, res, next) => {
   try {
     const user = await User.create(req.body);
     const token = await user.signToken();
+    console.log(token);
     res.json({ user: user.userJson(token) });
   } catch (e) {
     next(e);
