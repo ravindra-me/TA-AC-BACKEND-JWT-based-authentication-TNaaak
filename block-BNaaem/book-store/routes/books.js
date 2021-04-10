@@ -2,8 +2,11 @@ var express = require("express");
 var router = express.Router();
 var Book = require("../models/Book");
 var Comment = require("../models/Comment");
+var auth = require("../middlewares/auth");
 
 /* GET users listing. */
+
+router.use(auth.verifyToken);
 
 router.get("/", async (req, res) => {
   try {
@@ -14,7 +17,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res, next) => {
+router.post("/", auth.loggedInUser, async (req, res, next) => {
   try {
     const book = await Book.create(req.body);
     res.status(200).redirect("/api/v1/books");
@@ -22,8 +25,6 @@ router.post("/", async (req, res, next) => {
     res.status(400).send(e);
   }
 });
-
-
 
 router.put("/:id", async (req, res) => {
   try {
@@ -106,7 +107,6 @@ router.get("/author", async (req, res) => {
 //     res.status(400).send(e);
 //   }
 // })
-
 
 router.get("/:id", async (req, res) => {
   try {
