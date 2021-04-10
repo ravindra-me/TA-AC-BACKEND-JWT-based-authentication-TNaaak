@@ -5,18 +5,22 @@ var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 // var sassMiddleware = require("node-sass-middleware");
 var mongoose = require("mongoose");
-var Book = require('./models/Book');
-var Comment = require('./models/Comment');
+var Book = require("./models/Book");
+var Comment = require("./models/Comment");
+var auth = require("./middlewares/auth");
 
 var indexRouter = require("./routes/index");
 var booksRouter = require("./routes/books");
 var commentRouter = require("./routes/comment");
+var userRouter = require("./routes/user");
+
+require("dotenv").config();
 
 mongoose.connect(
-  'mongodb://localhost/bookStore-api',
+  "mongodb://localhost/bookStore-api",
   { useNewUrlParser: true, useUnifiedTopology: true },
   (err) => {
-    console.log(err ? err : 'Connected to database');
+    console.log(err ? err : "Connected to database");
   }
 );
 
@@ -42,7 +46,8 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/api", indexRouter);
 app.use("/api/v1/books", booksRouter);
-app.use('/api/v2/books', commentRouter);
+app.use("/api/v2/books", commentRouter);
+app.use("/api/users", userRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
