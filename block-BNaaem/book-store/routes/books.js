@@ -6,21 +6,26 @@ var auth = require("../middlewares/auth");
 
 /* GET users listing. */
 
-router.use(auth.verifyToken);
-
 router.get("/", async (req, res) => {
+  console.log(req.user);
   try {
-    const books = await Book.find({});
+    const books = await Book.find({}).populate("userId");
     res.status(200).json({ books: books });
   } catch (e) {
     res.status(400).send(e);
   }
 });
 
-router.post("/", auth.loggedInUser, async (req, res, next) => {
+router.use(auth.verifyToken);
+
+router.post("/", async (req, res) => {
+  console.log("ghjg");
   try {
+    console.log(req.user);
+    req.body.userId = req.user.userId;
     const book = await Book.create(req.body);
-    res.status(200).redirect("/api/v1/books");
+    console.log(book);
+    res.status(200).json({ book });
   } catch (e) {
     res.status(400).send(e);
   }
@@ -28,10 +33,13 @@ router.post("/", auth.loggedInUser, async (req, res, next) => {
 
 router.put("/:id", async (req, res) => {
   try {
-    const book = await Book.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    res.json({ updateBook: book });
+    const book = await Book.findById(req.params.id);
+    if (book.userId.toString() === req.user.userId.toString()) {
+      const updateBook = await Book.findByIdAndUpdate(req.params.id, req.body, {
+        new: true,
+      });
+      res.json({ updateBook, book });
+    }
   } catch (e) {
     res.status(400).send(e);
   }
@@ -39,10 +47,14 @@ router.put("/:id", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
-    const book = await Book.findByIdAndDelete(req.params.id);
-    const commentDelete = await Comment.deleteMany({ bookId: book.id });
-    console.log(book);
-    res.status(200).json({ book: book });
+    const book = await Book.findById(req.params.id);
+    if (book.userId.toString() === req.user.userId.toString()) {
+      const updateBook = await Book.findByIdAndDelete(req.params.id, req.body, {
+        new: true,
+      });
+      const comment = await Comment.deleteMany({ bookId: book._id });
+      res.json({ updateBook, book, comment });
+    }
   } catch (e) {
     res.status(400).send(e);
   }

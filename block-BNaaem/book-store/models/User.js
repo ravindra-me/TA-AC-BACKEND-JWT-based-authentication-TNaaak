@@ -29,6 +29,7 @@ user.methods.signToken = async function () {
   var payload = { userId: this._id, email: this.email };
   try {
     const token = jwt.sign(payload, process.env.SECRET);
+    console.log(token);
     return token;
   } catch (error) {
     return error;
